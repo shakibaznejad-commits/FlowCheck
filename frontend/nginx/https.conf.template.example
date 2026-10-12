@@ -1,0 +1,92 @@
+server {
+    listen 80;
+    server_name ${YOUR_DOMAIN};
+    server_tokens off;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${YOUR_DOMAIN};
+    root /usr/share/nginx/html;
+    server_tokens off;
+    autoindex off;
+
+    ssl_certificate /etc/letsencrypt/live/${YOUR_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${YOUR_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:FlowCheckTLS:10m;
+    ssl_session_timeout 10m;
+
+    add_header Strict-Transport-Security "max-age=15552000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), geolocation=(), microphone=()" always;
+
+    location = /health {
+        proxy_pass http://backend:8000/health;
+        include /etc/nginx/templates/proxy-headers.conf;
+    }
+
+    location = /api/health {
+        proxy_pass http://backend:8000/health;
+        include /etc/nginx/templates/proxy-headers.conf;
+    }
+
+    location = /demo/healthy { return 301 /demo/healthy/; }
+    location ^~ /demo/healthy/ {
+        limit_except GET HEAD { deny all; }
+        proxy_pass http://healthy-login/;
+        proxy_set_header Host $host;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header Cookie "";
+        proxy_set_header Authorization "";
+        proxy_hide_header Set-Cookie;
+        sub_filter_once off;
+        sub_filter_types *;
+        sub_filter '"/styles.css"' '"/demo/healthy/styles.css"';
+        sub_filter '"/behavior.js"' '"/demo/healthy/behavior.js"';
+        sub_filter '"/app.js"' '"/demo/healthy/app.js"';
+        sub_filter '"/workspace"' '"/demo/healthy/workspace"';
+        sub_filter '"/"' '"/demo/healthy/"';
+        sub_filter 'northline-workspace-session' 'northline-healthy-session';
+    }
+
+    location = /demo/buggy { return 301 /demo/buggy/; }
+    location ^~ /demo/buggy/ {
+        limit_except GET HEAD { deny all; }
+        proxy_pass http://buggy-login/;
+        proxy_set_header Host $host;
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header Cookie "";
+        proxy_set_header Authorization "";
+        proxy_hide_header Set-Cookie;
+        sub_filter_once off;
+        sub_filter_types *;
+        sub_filter '"/styles.css"' '"/demo/buggy/styles.css"';
+        sub_filter '"/behavior.js"' '"/demo/buggy/behavior.js"';
+        sub_filter '"/app.js"' '"/demo/buggy/app.js"';
+        sub_filter '"/workspace"' '"/demo/buggy/workspace"';
+        sub_filter '"/"' '"/demo/buggy/"';
+        sub_filter 'northline-workspace-session' 'northline-buggy-session';
+    }
+
+    location /api/ {
+        proxy_pass http://backend:8000;
+        include /etc/nginx/templates/proxy-headers.conf;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f7fb" />
+    <meta name="description" content="Sign in to your Northline Workspace." />
+    <title>Sign in · Northline Workspace</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/behavior.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="brand" aria-label="Northline Workspace">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">northline<span>workspace</span></span>
+      </header>
+
+      <section class="auth-layout" aria-labelledby="page-title">
+        <div class="intro-panel">
+          <p class="eyebrow">YOUR TEAM, IN SYNC</p>
+          <h1>Make room for<br /><em>good work.</em></h1>
+          <p class="intro-copy">A calmer place to plan, share, and move your projects forward.</p>
+          <div class="workspace-art" aria-hidden="true">
+            <div class="art-window">
+              <div class="art-toolbar"><i></i><i></i><i></i><span>Workspace overview</span><b>•••</b></div>
+              <div class="art-content">
+                <div class="art-rail"><b></b><i></i><i></i><i></i></div>
+                <div class="art-board">
+                  <div class="art-board-head"><span></span><span></span></div>
+                  <div class="art-card"><b></b><i></i><i></i><small></small></div>
+                  <div class="art-card art-card-short"><b></b><i></i><small></small></div>
+                </div>
+              </div>
+            </div>
+            <span class="art-orbit art-orbit-one"></span><span class="art-orbit art-orbit-two"></span>
+          </div>
+          <p class="privacy-note"><span aria-hidden="true">✳</span> Thoughtful work starts with a little breathing room.</p>
+        </div>
+
+        <div class="form-panel">
+          <div class="form-heading">
+            <p class="eyebrow">NORTHLINE WORKSPACE</p>
+            <h2 id="page-title">Sign in to your workspace</h2>
+            <p>Welcome back. Enter your details to continue.</p>
+          </div>
+          <form id="login-form" novalidate>
+            <label for="email">Email</label>
+            <div class="input-wrap"><span class="input-icon" aria-hidden="true">@</span><input id="email" name="email" type="email" autocomplete="username" placeholder="you@company.com" required /></div>
+            <div class="label-row"><label for="password">Password</label></div>
+            <div class="input-wrap"><span class="input-icon lock-icon" aria-hidden="true">▣</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required /></div>
+            <p id="feedback" class="feedback" role="status" aria-live="polite" hidden></p>
+            <button class="primary-button" type="submit"><span>Sign in</span><span aria-hidden="true">→</span></button>
+          </form>
+          <p class="form-footnote">Secure access for your team's workspace</p>
+        </div>
+      </section>
+
+      <footer class="page-footer"><span>© 2026 Northline Workspace</span><span class="footer-status"><i></i> All systems operational</span></footer>
+    </main>
+    <template id="workspace-template">
+      <section class="workspace-card" aria-labelledby="welcome-title">
+        <div class="workspace-icon" aria-hidden="true">N</div>
+        <p class="eyebrow">NORTHLINE WORKSPACE</p>
+        <h2 id="welcome-title">Welcome, Demo User</h2>
+        <p class="workspace-copy">You're signed in to your team workspace.</p>
+        <div class="workspace-divider"></div>
+        <div class="account-row"><span class="avatar">D</span><span><b>Demo User</b><small>demo@example.com</small></span><span class="account-check" aria-label="Signed in">✓</span></div>
+        <button class="secondary-button" id="logout" type="button">Log out</button>
+      </section>
+    </template>
+  </body>
+</html>

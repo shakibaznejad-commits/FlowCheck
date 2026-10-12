@@ -1,0 +1,14 @@
+FROM nginx:1.27-alpine
+
+ARG DEMO_BEHAVIOR=healthy.js
+
+COPY dual-login/index.html /usr/share/nginx/html/index.html
+COPY dual-login/styles.css /usr/share/nginx/html/styles.css
+COPY dual-login/app.js /usr/share/nginx/html/app.js
+COPY dual-login/${DEMO_BEHAVIOR} /usr/share/nginx/html/behavior.js
+COPY dual-login/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1

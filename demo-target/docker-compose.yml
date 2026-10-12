@@ -1,0 +1,65 @@
+services:
+  demo-target:
+    build: .
+    container_name: flowcheck-demo-target
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:80"
+    networks:
+      default: {}
+      flowcheck:
+        aliases:
+          - flowcheck-demo-target.test
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  healthy-login:
+    build:
+      context: .
+      dockerfile: Dockerfile.dual-login
+      args:
+        DEMO_BEHAVIOR: healthy.js
+    container_name: flowcheck-healthy-login
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8181:80"
+    networks:
+      default: {}
+      flowcheck:
+        aliases:
+          - flowcheck-healthy.test
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  buggy-login:
+    build:
+      context: .
+      dockerfile: Dockerfile.dual-login
+      args:
+        DEMO_BEHAVIOR: buggy.js
+    container_name: flowcheck-buggy-login
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8182:80"
+    networks:
+      default: {}
+      flowcheck:
+        aliases:
+          - flowcheck-buggy.test
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  default: {}
+  flowcheck:
+    name: flowcheck_default
+    external: true

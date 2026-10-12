@@ -1,0 +1,47 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:20128/v1}
+      LLM_MODEL: ${LLM_MODEL:-cx/gpt-6-luna}
+      FLOWCHECK_ARTIFACTS_DIR: ${FLOWCHECK_ARTIFACTS_DIR:-/app/artifacts}
+      FLOWCHECK_DATABASE_PATH: ${FLOWCHECK_DATABASE_PATH:-/app/data/flowcheck.db}
+      FLOWCHECK_COOKIE_SECURE: ${FLOWCHECK_COOKIE_SECURE:-false}
+      FLOWCHECK_TRUSTED_TEST_ORIGINS: ${FLOWCHECK_TRUSTED_TEST_ORIGINS:-}
+      FLOWCHECK_AI_APPROVED_USER_IDS: ${FLOWCHECK_AI_APPROVED_USER_IDS:-}
+      FLOWCHECK_AI_DAILY_PROVIDER_CALLS: ${FLOWCHECK_AI_DAILY_PROVIDER_CALLS:-30}
+      FLOWCHECK_AI_PROVIDER_CONCURRENCY_PER_USER: ${FLOWCHECK_AI_PROVIDER_CONCURRENCY_PER_USER:-1}
+      FLOWCHECK_AI_PROVIDER_CONCURRENCY_GLOBAL: ${FLOWCHECK_AI_PROVIDER_CONCURRENCY_GLOBAL:-2}
+      FLOWCHECK_AI_DAILY_EXECUTIONS: ${FLOWCHECK_AI_DAILY_EXECUTIONS:-10}
+      FLOWCHECK_AI_EXECUTION_CONCURRENCY_PER_USER: ${FLOWCHECK_AI_EXECUTION_CONCURRENCY_PER_USER:-1}
+      FLOWCHECK_AI_EXECUTION_CONCURRENCY_GLOBAL: ${FLOWCHECK_AI_EXECUTION_CONCURRENCY_GLOBAL:-2}
+      FLOWCHECK_AI_PROVIDER_LEASE_SECONDS: ${FLOWCHECK_AI_PROVIDER_LEASE_SECONDS:-600}
+      FLOWCHECK_AI_EXECUTION_LEASE_SECONDS: ${FLOWCHECK_AI_EXECUTION_LEASE_SECONDS:-600}
+      FLOWCHECK_AI_LEASE_RENEWAL_SECONDS: ${FLOWCHECK_AI_LEASE_RENEWAL_SECONDS:-30}
+    volumes:
+      - flowcheck_artifacts:/app/artifacts
+      - flowcheck_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      BACKEND_URL: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  flowcheck_artifacts:
+  flowcheck_data:

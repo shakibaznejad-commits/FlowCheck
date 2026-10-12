@@ -1,0 +1,135 @@
+name: flowcheck-prod
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      FLOWCHECK_ARTIFACTS_DIR: /app/artifacts
+      FLOWCHECK_DATABASE_PATH: /app/data/flowcheck.db
+      FLOWCHECK_COOKIE_SECURE: "${FLOWCHECK_COOKIE_SECURE:-true}"
+      FLOWCHECK_TRUSTED_TEST_ORIGINS: "http://flowcheck-demo-target.test,http://flowcheck-healthy.test,http://flowcheck-buggy.test"
+      FLOWCHECK_AI_APPROVED_USER_IDS: "${FLOWCHECK_AI_APPROVED_USER_IDS:-}"
+      FLOWCHECK_AI_DAILY_PROVIDER_CALLS: "${FLOWCHECK_AI_DAILY_PROVIDER_CALLS:-30}"
+      FLOWCHECK_AI_PROVIDER_CONCURRENCY_PER_USER: "${FLOWCHECK_AI_PROVIDER_CONCURRENCY_PER_USER:-1}"
+      FLOWCHECK_AI_PROVIDER_CONCURRENCY_GLOBAL: "${FLOWCHECK_AI_PROVIDER_CONCURRENCY_GLOBAL:-2}"
+      FLOWCHECK_AI_DAILY_EXECUTIONS: "${FLOWCHECK_AI_DAILY_EXECUTIONS:-10}"
+      FLOWCHECK_AI_EXECUTION_CONCURRENCY_PER_USER: "${FLOWCHECK_AI_EXECUTION_CONCURRENCY_PER_USER:-1}"
+      FLOWCHECK_AI_EXECUTION_CONCURRENCY_GLOBAL: "${FLOWCHECK_AI_EXECUTION_CONCURRENCY_GLOBAL:-2}"
+      FLOWCHECK_AI_PROVIDER_LEASE_SECONDS: "${FLOWCHECK_AI_PROVIDER_LEASE_SECONDS:-600}"
+      FLOWCHECK_AI_EXECUTION_LEASE_SECONDS: "${FLOWCHECK_AI_EXECUTION_LEASE_SECONDS:-600}"
+      FLOWCHECK_AI_LEASE_RENEWAL_SECONDS: "${FLOWCHECK_AI_LEASE_RENEWAL_SECONDS:-30}"
+    command:
+      ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]
+    expose:
+      - "8000"
+    volumes:
+      - flowcheck_prod_artifacts:/app/artifacts
+      - flowcheck_prod_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - flowcheck_network
+
+  demo-target:
+    build: ./demo-target
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      flowcheck_network:
+        aliases:
+          - flowcheck-demo-target.test
+
+  healthy-login:
+    build:
+      context: ./demo-target
+      dockerfile: Dockerfile.dual-login
+      args:
+        DEMO_BEHAVIOR: healthy.js
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      flowcheck_network:
+        aliases:
+          - flowcheck-healthy.test
+
+  buggy-login:
+    build:
+      context: ./demo-target
+      dockerfile: Dockerfile.dual-login
+      args:
+        DEMO_BEHAVIOR: buggy.js
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      flowcheck_network:
+        aliases:
+          - flowcheck-buggy.test
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NGINX_ENVSUBST_FILTER: "^YOUR_DOMAIN$"
+      YOUR_DOMAIN: "${YOUR_DOMAIN:-localhost}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/nginx:/etc/nginx/templates:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t >/dev/null 2>&1 && kill -0 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - flowcheck_network
+
+  certbot:
+    image: certbot/certbot:v5.8.0
+    profiles:
+      - certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+
+networks:
+  flowcheck_network:
+
+volumes:
+  flowcheck_prod_data:
+    name: flowcheck_prod_data
+  flowcheck_prod_artifacts:
+    name: flowcheck_prod_artifacts

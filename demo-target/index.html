@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>Northline Supply — Member sign in</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #142238;
+        --muted: #53647a;
+        --paper: #f3f6fa;
+        --card: #ffffff;
+        --line: #d6dee8;
+        --navy: #13243b;
+        --teal: #176f68;
+        --teal-dark: #105851;
+        --error-ink: #812f2f;
+        --error-bg: #fff2ef;
+        --success-bg: #e8f5ee;
+        --success-ink: #175b3d;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      .page {
+        width: min(1080px, calc(100% - 48px));
+        min-height: 100vh;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar, .footer {
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .wordmark {
+        color: var(--navy);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-decoration: none;
+      }
+
+      .eyebrow, .card-kicker, .footer {
+        font-family: "Segoe UI", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .layout {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
+        align-items: center;
+        gap: clamp(36px, 8vw, 104px);
+        padding: 48px 0 64px;
+      }
+
+      .intro { max-width: 470px; }
+      .eyebrow, .card-kicker { color: var(--teal-dark); }
+
+      h1 {
+        max-width: 9ch;
+        margin: 16px 0 20px;
+        color: var(--navy);
+        font-size: clamp(38px, 5vw, 58px);
+        letter-spacing: -.045em;
+        line-height: 1.04;
+      }
+
+      .intro-copy {
+        max-width: 42ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .account-note {
+        margin-top: 30px;
+        padding: 15px 17px;
+        border-left: 3px solid var(--teal);
+        background: #e8eef4;
+        color: #34475e;
+        font-size: 14px;
+      }
+
+      .card {
+        padding: clamp(26px, 4vw, 40px);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--card);
+        box-shadow: 0 18px 48px rgb(19 36 59 / 8%);
+      }
+
+      .card-kicker { margin: 0 0 12px; }
+
+      h2 {
+        margin: 0;
+        color: var(--navy);
+        font-size: 29px;
+        letter-spacing: -.035em;
+        line-height: 1.2;
+      }
+
+      .card-copy {
+        margin: 9px 0 27px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      form { display: grid; gap: 10px; }
+
+      label {
+        margin-top: 7px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      input {
+        width: 100%;
+        min-height: 48px;
+        padding: 11px 13px;
+        border: 1px solid #aab7c7;
+        border-radius: 5px;
+        color: var(--ink);
+        background: #fff;
+        font: inherit;
+      }
+
+      input::placeholder { color: #68798e; opacity: 1; }
+
+      input:focus-visible, button:focus-visible {
+        outline: 3px solid #16877d;
+        outline-offset: 3px;
+      }
+
+      button {
+        min-height: 49px;
+        margin-top: 12px;
+        border: 0;
+        border-radius: 5px;
+        color: #fff;
+        background: var(--teal-dark);
+        cursor: pointer;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        transition: background-color 160ms ease, transform 160ms ease;
+      }
+
+      button:hover { background: #0b4945; }
+      button:active { transform: translateY(1px); }
+
+      .result {
+        margin: 7px 0 0;
+        padding: 12px 14px;
+        border: 1px solid #d9b9b3;
+        border-radius: 5px;
+        color: var(--error-ink);
+        background: var(--error-bg);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .result[data-kind="success"] {
+        border-color: #b5d9c3;
+        color: var(--success-ink);
+        background: var(--success-bg);
+      }
+
+      .card-foot {
+        margin: 25px 0 0;
+        color: var(--muted);
+        font-family: "Segoe UI", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .dashboard-copy { margin: 12px 0 18px; color: var(--muted); }
+
+      .footer {
+        min-height: 54px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      [hidden] { display: none !important; }
+
+      @media (max-width: 720px) {
+        .page { width: min(100% - 32px, 480px); }
+        .topbar { min-height: 68px; }
+        .layout {
+          grid-template-columns: 1fr;
+          gap: 28px;
+          align-content: center;
+          padding: 34px 0 44px;
+        }
+        .intro { max-width: none; }
+        h1 { max-width: 12ch; margin: 12px 0; font-size: clamp(36px, 11vw, 48px); }
+        .intro-copy { font-size: 15px; }
+        .account-note { margin-top: 17px; }
+        .card { padding: 25px 22px; }
+        .footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; padding: 12px 0; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <a class="wordmark" href="#main">NORTHLINE SUPPLY</a>
+        <span class="eyebrow">Account portal</span>
+      </header>
+
+      <section class="layout" id="main" aria-labelledby="page-title">
+        <div class="intro">
+          <p class="eyebrow">Northline Supply · Member account</p>
+          <h1 id="page-title">Good to have you back.</h1>
+          <p class="intro-copy">Sign in to review your orders and manage your account.</p>
+          <aside class="account-note">Member access for Northline Supply customers.</aside>
+        </div>
+
+        <section class="card" aria-labelledby="form-title">
+          <div id="login-view">
+            <p class="card-kicker">Member sign in</p>
+            <h2 id="form-title">Welcome back</h2>
+            <p class="card-copy">Enter your account details to continue.</p>
+
+            <form id="login-form" autocomplete="off" novalidate>
+              <label for="email">Email</label>
+              <input id="email" type="email" autocomplete="off" placeholder="name@example.com" />
+
+              <label for="password">Password</label>
+              <input id="password" type="password" autocomplete="off" placeholder="Enter your password" />
+
+              <button type="submit">Log in</button>
+              <p class="result" id="login-result" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+            </form>
+          </div>
+
+          <section id="dashboard-view" aria-labelledby="dashboard-title" hidden>
+            <p class="card-kicker">Member account</p>
+            <h2 id="dashboard-title" tabindex="-1">Welcome, Demo User</h2>
+            <p class="dashboard-copy">Your Northline Supply account is ready.</p>
+            <button id="logout-button" type="button">Log out</button>
+          </section>
+
+          <p class="card-foot">Northline Supply · Member services</p>
+        </section>
+      </section>
+
+      <footer class="footer">
+        <span>Northline Supply · Member account</span>
+        <span>© 2026 Northline Supply</span>
+      </footer>
+    </main>
+
+    <script>
+      // Intentionally non-authenticating QA demo. Fictional values are checked in memory only.
+      // The operator-controlled demoMode switch changes the valid-login UI outcome; no cause is simulated.
+      const DEMO_EMAIL = "demo@example.com";
+      const DEMO_PASSWORD = "CorrectPass123!";
+      const ambiguousMode = new URLSearchParams(window.location.search).get("demoMode") === "ambiguous";
+      const loginForm = document.getElementById("login-form");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const loginResult = document.getElementById("login-result");
+      const loginView = document.getElementById("login-view");
+      const dashboardView = document.getElementById("dashboard-view");
+      const logoutButton = document.getElementById("logout-button");
+
+      function clearCredentials() {
+        emailInput.value = "";
+        passwordInput.value = "";
+      }
+
+      function showLoginResult(message, kind = "error") {
+        loginResult.textContent = message;
+        loginResult.dataset.kind = kind;
+        loginResult.hidden = false;
+      }
+
+      loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+        clearCredentials();
+        loginResult.hidden = true;
+        loginResult.textContent = "";
+
+        if (email !== DEMO_EMAIL) {
+          showLoginResult("Email not found");
+          return;
+        }
+
+        if (password !== DEMO_PASSWORD) {
+          showLoginResult("Incorrect password");
+          return;
+        }
+
+        if (ambiguousMode) {
+          showLoginResult("Something went wrong. Please try again later.");
+          return;
+        }
+
+        loginView.hidden = true;
+        dashboardView.hidden = false;
+        document.getElementById("dashboard-title").focus({ preventScroll: true });
+      });
+
+      logoutButton.addEventListener("click", () => {
+        clearCredentials();
+        dashboardView.hidden = true;
+        loginView.hidden = false;
+        loginResult.hidden = true;
+        loginResult.textContent = "";
+        emailInput.focus();
+      });
+    </script>
+  </body>
+</html>
